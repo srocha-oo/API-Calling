@@ -7,18 +7,42 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct BrandListView: View {
+    
+    @State private var products: [Product] = []
+    
+    var brands: [String] {
+        let brandNames = products.compactMap { $0.brand }
+        return Array(Set(brandNames)).sorted()
+    }
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        
+        NavigationStack {
+            
+            List(brands, id: \.self) { brand in
+                
+                NavigationLink(destination: ProductListView(brand: brand, products: products)) {
+                    Text(brand.capitalized)
+                }
+            }
+            .navigationTitle("Makeup Brands")
         }
-        .padding()
+        .onAppear {
+            loadProducts()
+        }
+    }
+    
+    func loadProducts() {
+        
+        let service = MakeupService()
+        
+        service.fetchProducts { result in
+            self.products = result
+        }
     }
 }
-
 #Preview {
-    ContentView()
+    BrandListView()
 }
+
